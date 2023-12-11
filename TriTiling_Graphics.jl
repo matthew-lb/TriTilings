@@ -123,18 +123,18 @@ function save_matching_to_file(tiling, tikz_func, filename; xscale = 1.0, yscale
         write(io, define_swdimers()*"\n")
         l,w = tiling.domain_dimensions
         for (i,j) in tiling.iterator_helper_array[1]
-            if get_up(tiling,i,j) == 1
+            if tiling.get_up(tiling,i,j) == 1
                 write(io,tikz_func(i,j,i+1,j+1)*"\n")
-            elseif get_up(tiling,i,j) == 2
+            elseif tiling.get_up(tiling,i,j) == 2
                 write(io,tikz_func(i,j+1,i+1,j+1)*"\n")
-            elseif get_up(tiling,i,j) == 3
+            elseif tiling.get_up(tiling,i,j) == 3
                 write(io,tikz_func(i,j,i,j+1)*"\n")
             end
-            if get_down(tiling,i,j) == 1
+            if tiling.get_down(tiling,i,j) == 1
                 write(io,tikz_func(i,j,i+1,j+1)*"\n")
-            elseif get_down(tiling,i,j) == 2
+            elseif tiling.get_down(tiling,i,j) == 2
                 write(io,tikz_func(i,j,i+1,j)*"\n")
-            elseif get_down(tiling,i,j) == 3
+            elseif tiling.get_down(tiling,i,j) == 3
                 write(io,tikz_func(i+1,j,i+1,j+1)*"\n")
             end
         end

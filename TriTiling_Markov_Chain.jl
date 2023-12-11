@@ -2,72 +2,72 @@
 include("TriTilings.jl")
 
 function rotate_upface_clockwise!(tiling::TriTiling, x::Int64, y::Int64)
-    if get_up(tiling, x, y) == 1 #Orientation \ -> _
+    if tiling.get_up(tiling, x, y) == 1 #Orientation \ -> _
         #Adjust center, then right, then below
-        set_up!(tiling, x,y,2)
-        set_down!(tiling,x,y,0)
-        set_down!(tiling,x,y+1,2)
-    elseif get_up(tiling, x, y) == 2 #Orienation _-> /
+        tiling.set_up!(tiling, x,y,2)
+        tiling.set_down!(tiling,x,y,0)
+        tiling.set_down!(tiling,x,y+1,2)
+    elseif tiling.get_up(tiling, x, y) == 2 #Orienation _-> /
         #Adjust center, then below, then left
-        set_up!(tiling, x,y,3)
-        set_down!(tiling,x,y+1,0)
-        set_down!(tiling,x-1,y,3)
-    elseif get_up(tiling, x, y) == 3 #Orientation / -> \
+        tiling.set_up!(tiling, x,y,3)
+        tiling.set_down!(tiling,x,y+1,0)
+        tiling.set_down!(tiling,x-1,y,3)
+    elseif tiling.get_up(tiling, x, y) == 3 #Orientation / -> \
         #Adjust center, then left, then right
-        set_up!(tiling, x,y,1)
-        set_down!(tiling,x-1,y,0)
-        set_down!(tiling,x,y,1)
+        tiling.set_up!(tiling, x,y,1)
+        tiling.set_down!(tiling,x-1,y,0)
+        tiling.set_down!(tiling,x,y,1)
     end
 end
 
 function rotate_downface_clockwise!(tiling::TriTiling, x::Int64, y::Int64)
-    if get_down(tiling, x, y) == 1 #Orientation \ -> _
+    if tiling.get_down(tiling, x, y) == 1 #Orientation \ -> _
         #Adjust center, then left, then up
-        set_down!(tiling,x,y,2)
-        set_up!(tiling,x,y,0)
-        set_up!(tiling,x,y-1,2)
-    elseif get_down(tiling, x, y) == 2 #Orientation _ -> /
+        tiling.set_down!(tiling,x,y,2)
+        tiling.set_up!(tiling,x,y,0)
+        tiling.set_up!(tiling,x,y-1,2)
+    elseif tiling.get_down(tiling, x, y) == 2 #Orientation _ -> /
         #Adjust center, then up, then right
-        set_down!(tiling,x,y,3)
-        set_up!(tiling,x,y-1,0)
-        set_up!(tiling,x+1,y,3)
-    elseif get_down(tiling, x, y) == 3 #Orientation / -> \
+        tiling.set_down!(tiling,x,y,3)
+        tiling.set_up!(tiling,x,y-1,0)
+        tiling.set_up!(tiling,x+1,y,3)
+    elseif tiling.get_down(tiling, x, y) == 3 #Orientation / -> \
         #Adjust center, then right, then left
-        set_down!(tiling,x,y,1)
-        set_up!(tiling,x+1,y,0)
-        set_up!(tiling,x,y,1)
+        tiling.set_down!(tiling,x,y,1)
+        tiling.set_up!(tiling,x+1,y,0)
+        tiling.set_up!(tiling,x,y,1)
     end
 end
 
 function rotate_upface_anticlockwise!(tiling::TriTiling, x::Int64, y::Int64)
-    if get_up(tiling, x, y) == 1
-        set_up!(tiling, x, y, 3)
-        set_down!(tiling, x, y, 0)
-        set_down!(tiling, x - 1, y, 3)
-    elseif get_up(tiling, x, y) == 2
-        set_up!(tiling, x, y, 1)
-        set_down!(tiling, x, y+1, 0)
-        set_down!(tiling, x, y, 1)
-    elseif get_up(tiling, x, y) == 3
-        set_up!(tiling, x, y, 2)
-        set_down!(tiling, x-1, y, 0)
-        set_down!(tiling, x, y+1, 2)
+    if tiling.get_up(tiling, x, y) == 1
+        tiling.set_up!(tiling, x, y, 3)
+        tiling.set_down!(tiling, x, y, 0)
+        tiling.set_down!(tiling, x - 1, y, 3)
+    elseif tiling.get_up(tiling, x, y) == 2
+        tiling.set_up!(tiling, x, y, 1)
+        tiling.set_down!(tiling, x, y+1, 0)
+        tiling.set_down!(tiling, x, y, 1)
+    elseif tiling.get_up(tiling, x, y) == 3
+        tiling.set_up!(tiling, x, y, 2)
+        tiling.set_down!(tiling, x-1, y, 0)
+        tiling.set_down!(tiling, x, y+1, 2)
     end
 end
 
 function rotate_downface_anticlockwise!(tiling::TriTiling, x::Int64, y::Int64)
-    if get_down(tiling, x, y) == 1
-        set_down!(tiling, x, y, 3)
-        set_up!(tiling, x, y, 0)
-        set_up!(tiling, x + 1, y, 3)
-    elseif get_down(tiling, x, y) == 2
-        set_down!(tiling, x, y, 1)
-        set_up!(tiling, x, y-1, 0)
-        set_up!(tiling, x, y, 1)
-    elseif get_down(tiling, x, y) == 3
-        set_down!(tiling, x, y, 2)
-        set_up!(tiling, x+1, y, 0)
-        set_up!(tiling, x, y-1, 2)
+    if tiling.get_down(tiling, x, y) == 1
+        tiling.set_down!(tiling, x, y, 3)
+        tiling.set_up!(tiling, x, y, 0)
+        tiling.set_up!(tiling, x + 1, y, 3)
+    elseif tiling.get_down(tiling, x, y) == 2
+        tiling.set_down!(tiling, x, y, 1)
+        tiling.set_up!(tiling, x, y-1, 0)
+        tiling.set_up!(tiling, x, y, 1)
+    elseif tiling.get_down(tiling, x, y) == 3
+        tiling.set_down!(tiling, x, y, 2)
+        tiling.set_up!(tiling, x+1, y, 0)
+        tiling.set_up!(tiling, x, y-1, 2)
     end
 end
 
@@ -87,20 +87,20 @@ function update_lozenge!(tiling::TriTiling, x::Int64, y::Int64, axis::Int64)
     #Position of lozenge is defined by the coordinate of the up face
     #NOTE: Make sure this is only called when all relevant faces > 0
     if axis == 1
-        if (get_up(tiling,x,y) != 1) && (get_up(tiling,x,y) == get_down(tiling,x,y))
-            clkwise = (get_up(tiling,x,y) == 2)
+        if (tiling.get_up(tiling,x,y) != 1) && (tiling.get_up(tiling,x,y) == tiling.get_down(tiling,x,y))
+            clkwise = (tiling.get_up(tiling,x,y) == 2)
             rotate_face!(tiling, x, y, true, clkwise)
             rotate_face!(tiling, x, y, false, clkwise)  
         end
     elseif axis == 2
-        if (get_up(tiling,x,y) != 2) && (get_up(tiling,x,y) == get_down(tiling,x,y+1))
-            clkwise = (get_up(tiling,x,y) == 3)
+        if (tiling.get_up(tiling,x,y) != 2) && (tiling.get_up(tiling,x,y) == tiling.get_down(tiling,x,y+1))
+            clkwise = (tiling.get_up(tiling,x,y) == 3)
             rotate_face!(tiling, x, y, true, clkwise)
             rotate_face!(tiling, x, y+1, false, clkwise) 
         end
     elseif axis == 3
-        if (get_up(tiling,x,y) != 3) && (get_up(tiling,x,y) == get_down(tiling,x-1,y))
-            clkwise = (get_up(tiling,x,y) == 1)
+        if (tiling.get_up(tiling,x,y) != 3) && (tiling.get_up(tiling,x,y) == tiling.get_down(tiling,x-1,y))
+            clkwise = (tiling.get_up(tiling,x,y) == 1)
             rotate_face!(tiling, x, y, true, clkwise)
             rotate_face!(tiling, x-1, y, false, clkwise) 
         end
@@ -109,21 +109,21 @@ end
 
 function is_triangle(tiling::TriTiling, x::Int64, y::Int64, is_up::Bool)
     if is_up
-        return (get_down(tiling,x,y) == 0) && (get_up(tiling,x,y) > 0) && (get_up(tiling,x+1,y) > 0) && (get_up(tiling,x,y-1) > 0)
+        return (tiling.get_down(tiling,x,y) == 0) && (tiling.get_up(tiling,x,y) > 0) && (tiling.get_up(tiling,x+1,y) > 0) && (tiling.get_up(tiling,x,y-1) > 0)
     else
-        return (get_up(tiling,x,y) == 0) && (get_down(tiling,x-1,y) > 0) && (get_down(tiling,x,y) > 0) && (get_down(tiling,x,y+1) > 0)
+        return (tiling.get_up(tiling,x,y) == 0) && (tiling.get_down(tiling,x-1,y) > 0) && (tiling.get_down(tiling,x,y) > 0) && (tiling.get_down(tiling,x,y+1) > 0)
     end 
 end
 
 function update_triangle!(tiling::TriTiling, x::Int64, y::Int64, is_up::Bool)
     if is_triangle(tiling, x, y, is_up)
         if is_up
-            clkwise = (get_up(tiling,x,y) == 2)
+            clkwise = (tiling.get_up(tiling,x,y) == 2)
             rotate_face!(tiling, x, y, true, clkwise)
             rotate_face!(tiling, x+1, y, true, clkwise)
             rotate_face!(tiling, x, y-1, true, clkwise)
         else
-            clkwise = (get_down(tiling,x-1,y) == 1)
+            clkwise = (tiling.get_down(tiling,x-1,y) == 1)
             rotate_face!(tiling, x-1, y, false, clkwise)
             rotate_face!(tiling, x, y, false, clkwise)
             rotate_face!(tiling, x, y+1, false, clkwise)       
@@ -133,30 +133,30 @@ end
 
 function is_butterfly(tiling::TriTiling, x::Int64, y::Int64, axis::Int64)
     if axis == 1
-        return (get_up(tiling,x,y) == 0) && (get_down(tiling,x,y) == 0) && (get_down(tiling,x-1,y) > 0) && (get_up(tiling,x,y-1) > 0) && (get_up(tiling,x+1,y) > 0) && (get_down(tiling,x,y+1) > 0)
+        return (tiling.get_up(tiling,x,y) == 0) && (tiling.get_down(tiling,x,y) == 0) && (tiling.get_down(tiling,x-1,y) > 0) && (tiling.get_up(tiling,x,y-1) > 0) && (tiling.get_up(tiling,x+1,y) > 0) && (tiling.get_down(tiling,x,y+1) > 0)
     elseif axis == 2
-        return (get_up(tiling,x,y) == 0) && (get_down(tiling,x,y+1) == 0) && (get_down(tiling,x-1,y) > 0) && (get_up(tiling,x,y+1) > 0) && (get_down(tiling,x,y) > 0) && (get_up(tiling,x+1,y+1) > 0)
+        return (tiling.get_up(tiling,x,y) == 0) && (tiling.get_down(tiling,x,y+1) == 0) && (tiling.get_down(tiling,x-1,y) > 0) && (tiling.get_up(tiling,x,y+1) > 0) && (tiling.get_down(tiling,x,y) > 0) && (tiling.get_up(tiling,x+1,y+1) > 0)
     elseif axis == 3
-        return (get_up(tiling,x,y) == 0) && (get_down(tiling,x-1,y) == 0) && (get_up(tiling,x-1,y-1) > 0) && (get_up(tiling,x-1,y) > 0) && (get_down(tiling,x,y+1) > 0) && (get_down(tiling,x,y) > 0)
+        return (tiling.get_up(tiling,x,y) == 0) && (tiling.get_down(tiling,x-1,y) == 0) && (tiling.get_up(tiling,x-1,y-1) > 0) && (tiling.get_up(tiling,x-1,y) > 0) && (tiling.get_down(tiling,x,y+1) > 0) && (tiling.get_down(tiling,x,y) > 0)
     end
 end
 
 function update_butterfly!(tiling::TriTiling, x::Int64, y::Int64, axis::Int64)
     if is_butterfly(tiling, x, y, axis)
         if axis == 1
-            clkwise = (get_down(tiling,x-1,y) == 1)
+            clkwise = (tiling.get_down(tiling,x-1,y) == 1)
             rotate_face!(tiling, x-1, y, false, clkwise)
             rotate_face!(tiling, x, y+1, false, clkwise)
             rotate_face!(tiling, x, y-1, true, clkwise)
             rotate_face!(tiling, x+1, y, true, clkwise)
         elseif axis == 2
-            clkwise = (get_down(tiling,x,y) == 2)
+            clkwise = (tiling.get_down(tiling,x,y) == 2)
             rotate_face!(tiling, x-1, y, false, clkwise)
             rotate_face!(tiling, x, y+1, true, clkwise)
             rotate_face!(tiling, x, y, false, clkwise)
             rotate_face!(tiling, x+1, y+1, true, clkwise)
         elseif axis == 3
-            clkwise = (get_down(tiling,x,y) == 2)
+            clkwise = (tiling.get_down(tiling,x,y) == 2)
             rotate_face!(tiling, x, y, false, clkwise)
             rotate_face!(tiling, x, y+1, false, clkwise)
             rotate_face!(tiling, x-1, y, true, clkwise)

@@ -37,11 +37,26 @@ Steps (4), (5) will be accomplished by the function convert_temporary_configurat
 
 using .Threads
 include("TriTilings.jl")
+include("GenericTriTiling.jl")
 
 #################### KEY FUNCTIONALITY ####################
 
+abstract type AbstractCompositeTriTiling <: TriTiling end
 
-function add_to_iterator_helper!(tiling::TriTiling, x::Int64, y::Int64)
+@kwdef mutable struct CompositeTriTiling <: AbstractCompositeTriTiling
+    up_configs::Vector{Vector{Int64}} = [[Int64(1)]]
+    down_configs::Vector{Vector{Int64}} = [[Int64(1)]]
+    iterate::Function
+    get_up::Function = generic_get_up
+    get_down::Function = generic_get_down
+    set_up!::Function = generic_set_up!
+    set_down!::Function = generic_set_down!
+    iterator_helper_array::Vector{Vector{Tuple{Int64, Int64}}} = [[(1,1)]]
+    domain_dimensions::Vector{Int64} = [1,1]
+    composite_domains::Vector{Tuple{Any,Any}} = []
+end
+
+function add_to_iterator_helper!(tiling::AbstractCompositeTriTiling, x::Int64, y::Int64)
     push!(tiling.iterator_helper_array[1], (x,y))
     for axis in 1:3
         if axis == 1
@@ -56,7 +71,7 @@ function add_to_iterator_helper!(tiling::TriTiling, x::Int64, y::Int64)
     end
 end
 
-function convert_temporary_configurations!(tiling::TriTiling)
+function convert_temporary_configurations!(tiling::AbstractCompositeTriTiling)
     l,w = tiling.domain_dimensions
     for x in 1:w for y in 1:l
         add_to_iterator = false
@@ -89,7 +104,7 @@ function convert_temporary_configurations!(tiling::TriTiling)
     end
 end
 
-function composite_initalizer!(tiling::TriTiling)
+function composite_initalizer!(tiling::AbstractCompositeTriTiling)
     #We will assume domain_dimensions, composite_domains have been set
     l,w = tiling.domain_dimensions
     tiling.iterator_helper_array = [[] for _ in 1:16]
@@ -101,7 +116,7 @@ function composite_initalizer!(tiling::TriTiling)
     convert_temporary_configurations!(tiling)
 end
 
-function composite_iterator(tiling::TriTiling, update_type::Function; axis::Int64 = 1, color::Int64 = 0, is_up::Bool = true)
+function composite_iterator(tiling::AbstractCompositeTriTiling, update_type::Function; axis::Int64 = 1, color::Int64 = 0, is_up::Bool = true)
     if update_type == update_triangle!
         for (x,y) in tiling.iterator_helper_array[1]
             update_type(tiling, x, y, is_up)
@@ -119,7 +134,7 @@ end
 
 #################### SIMPLE DOMAINS ####################
 
-function add_axis_one_line!(tiling::TriTiling, l::Int64, x::Int64, y::Int64)
+function add_axis_one_line!(tiling::AbstractCompositeTriTiling, l::Int64, x::Int64, y::Int64)
     if l%2 != 1
         throw(DomainError((l,1), "No tiling of the domain with such side lengths exists"))
     end
@@ -143,7 +158,7 @@ function add_axis_one_line!(tiling::TriTiling, l::Int64, x::Int64, y::Int64)
     end
 end
 
-function add_axis_two_line!(tiling::TriTiling, w::Int64, x::Int64, y::Int64)
+function add_axis_two_line!(tiling::AbstractCompositeTriTiling, w::Int64, x::Int64, y::Int64)
     #w refers to length not number of points
     if w%2 != 1
         throw(DomainError((1,w), "No tiling of the domain with such side lengths exists"))
@@ -168,7 +183,7 @@ function add_axis_two_line!(tiling::TriTiling, w::Int64, x::Int64, y::Int64)
     end
 end
 
-function add_axis_three_line!(tiling::TriTiling, l::Int64, x::Int64, y::Int64)
+function add_axis_three_line!(tiling::AbstractCompositeTriTiling, l::Int64, x::Int64, y::Int64)
     if l%2 != 1
         throw(DomainError((l,1), "No tiling of the domain with such side lengths exists"))
     end
@@ -192,7 +207,7 @@ function add_axis_three_line!(tiling::TriTiling, l::Int64, x::Int64, y::Int64)
     end
 end
 
-function add_parallelogram!(tiling::TriTiling, l::Int64, w::Int64, x::Int64, y::Int64, axis::Int64)
+function add_parallelogram!(tiling::AbstractCompositeTriTiling, l::Int64, w::Int64, x::Int64, y::Int64, axis::Int64)
     if (l%2 == 0) && (w%2 == 0)
         throw(DomainError((l,w), "No tiling of the domain with such side lengths exists"))
     end
@@ -229,7 +244,7 @@ function add_parallelogram!(tiling::TriTiling, l::Int64, w::Int64, x::Int64, y::
     end
 end
 
-function add_rectangle_helper!(tiling::TriTiling, w::Int64, x::Int64, y::Int64, odd = true)
+function add_rectangle_helper!(tiling::AbstractCompositeTriTiling, w::Int64, x::Int64, y::Int64, odd = true)
     if w%2 != 0
         throw(DomainError((3,w), "No tiling of the domain (rectangle) with such side lengths exists"))
     end
@@ -243,7 +258,7 @@ function add_rectangle_helper!(tiling::TriTiling, w::Int64, x::Int64, y::Int64, 
     end
 end
 
-function add_rectangle!(tiling::TriTiling, l::Int64, w::Int64, x::Int64, y::Int64)
+function add_rectangle!(tiling::AbstractCompositeTriTiling, l::Int64, w::Int64, x::Int64, y::Int64)
     if (w%2 != 0) || (l%4 == 2) || (l%4 == 1)
         throw(DomainError((l,w), "No tiling of the domain (rectangle) with such side lengths exists"))
     end
@@ -255,8 +270,8 @@ function add_rectangle!(tiling::TriTiling, l::Int64, w::Int64, x::Int64, y::Int6
     end
 end
 
-function add_up_trapezoid!(tiling::TriTiling, l::Int64, w::Int64)
+function add_up_trapezoid!(tiling::AbstractCompositeTriTiling, l::Int64, w::Int64)
 end
 
-function add_down_trapezoid!(tiling::TriTiling, l::Int64, w::Int64)
+function add_down_trapezoid!(tiling::AbstractCompositeTriTiling, l::Int64, w::Int64)
 end
