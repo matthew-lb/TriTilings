@@ -119,6 +119,7 @@ end
 
 function save_matching_to_tex_file(tiling, tikz_func, filename; xscale = 1.0, yscale = 1.0, jump = 5)
     file_text = []
+    filename = "img/"*filename
     open(filename, "w") do io
         write(io, latex_preamble(xscale = xscale, yscale = yscale))
         write(io, tikz_edimers()*"\n")
@@ -275,20 +276,21 @@ function full_matching_luxor(tiling::AbstractCompositeTriTiling, luxor_func; xsh
     end
 end
 
-function save_matching_to_luxor_file(tiling::CompositeTriTiling, luxor_func)
-    @svg begin
-        full_matching_luxor(tiling, luxor_func)
-    end
+function save_matching_to_luxor_file(tiling::CompositeTriTiling, luxor_func, filename; xdim = 500, ydim = 500)
+    Drawing(xdim, ydim, "img/"*filename)
+    full_matching_luxor(tiling, luxor_func)
+    finish()
 end
 
-function save_matching_to_luxor_file(tiling::PeriodicCompositeTriTiling, luxor_func)
+function save_matching_to_luxor_file(tiling::PeriodicCompositeTriTiling, luxor_func, filename; xdim = 500, ydim = 500)
     xbound = tiling.domain_dimensions[1] - tiling.shift[1]
     ybound = tiling.domain_dimensions[2] - tiling.shift[2]
-    @svg begin
-        for xshift in [-xbound, 0, xbound]
-            for yshift in [-ybound, 0, ybound]
-                full_matching_luxor(tiling, luxor_func, xshift = xshift, yshift = yshift)
-            end
+    Drawing(xdim, ydim, "img/"*filename)
+    origin()
+    for xshift in [-xbound, 0, xbound]
+        for yshift in [-ybound, 0, ybound]
+            full_matching_luxor(tiling, luxor_func, xshift = xshift, yshift = yshift)
         end
     end
+    finish()
 end
