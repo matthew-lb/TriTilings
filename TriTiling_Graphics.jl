@@ -1,5 +1,5 @@
 #################### TIKZ DRAWING ####################
-include("TriTilings.jl")
+include("AbstractCompositeTriTiling.jl")
 using DelimitedFiles
 using Luxor
 using Printf
@@ -161,10 +161,8 @@ function luxor_hexagon()
     fillstroke()
 end
 
-function luxor_edimer(x,y;col ="aqua")
+function luxor_edimer(x,y;col ="aqua", border = false)
     Luxor.translate(Point(x,y))
-    setcolor(col)
-    setline(0)
     move(Point(cos(2*pi*(.5)/6)/sqrt(3), -sin(2*pi*(.5)/6)/sqrt(3)))
     for i in 1:5
         line(Point(cos(2*pi*(i+.5)/6)/sqrt(3), -sin(2*pi*(i+.5)/6)/sqrt(3)))
@@ -173,13 +171,21 @@ function luxor_edimer(x,y;col ="aqua")
         line(Point(1+cos(2*pi*(i+.5)/6)/sqrt(3), -sin(2*pi*(i+.5)/6)/sqrt(3)))
     end
     closepath()
-    fillstroke()
+    setcolor(col)
+    fillpreserve()
+    if border
+        setline(.2)
+        setcolor("red")
+    else
+        setline(.1)
+        setcolor("black")
+    end
+    strokepath()
 end
 
-function luxor_sedimer(x,y; col = "aquamarine2")
+function luxor_sedimer(x,y; col = "aquamarine2", border = false)
     Luxor.translate(Point(x,y))
-    setcolor(col)
-    setline(0)
+    setline(.1)
     move(Point(cos(2*pi*(5.5)/6)/sqrt(3), -sin(2*pi*(5.5)/6)/sqrt(3)))
     for i in 6:10
         line(Point(cos(2*pi*(i+.5)/6)/sqrt(3), -sin(2*pi*(i+.5)/6)/sqrt(3)))
@@ -188,13 +194,21 @@ function luxor_sedimer(x,y; col = "aquamarine2")
         line(Point(1/2+cos(2*pi*(i+.5)/6)/sqrt(3), sqrt(3)/2-sin(2*pi*(i+.5)/6)/sqrt(3)))
     end
     closepath()
-    fillstroke()
+    setcolor(col)
+    fillpreserve()
+    if border
+        setline(.2)
+        setcolor("red")
+    else
+        setline(.1)
+        setcolor("black")
+    end
+    strokepath()
 end
 
-function luxor_swdimer(x,y; col = "blue")
+function luxor_swdimer(x,y; col = "blue", border = false)
     Luxor.translate(Point(x,y))
-    setcolor(col)
-    setline(0)
+    setline(.1)
     move(Point(cos(2*pi*(4.5)/6)/sqrt(3), -sin(2*pi*(4.5)/6)/sqrt(3)))
     for i in 5:9
         line(Point(cos(2*pi*(i+.5)/6)/sqrt(3), -sin(2*pi*(i+.5)/6)/sqrt(3)))
@@ -203,48 +217,78 @@ function luxor_swdimer(x,y; col = "blue")
         line(Point(-1/2+cos(2*pi*(i+.5)/6)/sqrt(3), sqrt(3)/2-sin(2*pi*(i+.5)/6)/sqrt(3)))
     end
     closepath()
-    fillstroke()
+    setcolor(col)
+    fillpreserve()
+    if border
+        setline(.2)
+        setcolor("red")
+    else
+        setline(.1)
+        setcolor("black")
+    end
+    strokepath()
 end
 
-function luxor_dimer(i1,j1,i2,j2; e_col = "lightblue", se_col = "blue", sw_col = "darkblue")
+function luxor_dimer(i1,j1,i2,j2; border = false, e_col = "lightblue", se_col = "blue", sw_col = "darkblue")
+    border = border && (i1 == 1 || j1 == 1)
     x1, y1 = luxor_coors(i1, j1)
     x2, y2 = luxor_coors(i2, j2)
     if (y1 == y2) && (x1 < x2)
-        luxor_edimer(x1, y1, col = e_col)
+        luxor_edimer(x1, y1, col = e_col, border = border)
     elseif (y1 == y2) && (x2 < x1)
-        luxor_edimer(x2, y2, col = e_col)
+        luxor_edimer(x2, y2, col = e_col, border = border)
     elseif (x1 < x2) && (y1 < y2)
-        luxor_sedimer(x1, y1, col = se_col)
+        luxor_sedimer(x1, y1, col = se_col, border = border)
     elseif (x1 > x2) && (y1 > y2)
-        luxor_sedimer(x2, y2, col = se_col)
+        luxor_sedimer(x2, y2, col = se_col, border = border)
     elseif (x1 > x2) && (y1 < y2)
-        luxor_swdimer(x1, y1, col = sw_col)
+        luxor_swdimer(x1, y1, col = sw_col, border = border)
     else
         luxor_swdimer(x2, y2, col = sw_col)
     end
 end
 
-function save_matching_to_luxor_file(tiling, luxor_func)
+function full_matching_luxor(tiling::AbstractCompositeTriTiling, luxor_func; xshift = 0, yshift = 0)
+    border = (typeof(tiling) == PeriodicCompositeTriTiling)
+    xshift,yshift = luxor_coors(xshift, yshift)
+    for (i,j) in tiling.iterator_helper_array[1]
+        gsave()
+        Luxor.translate(Point(xshift, yshift))
+        if tiling.get_up(tiling,i,j) == 1
+            luxor_func(i,j,i+1,j+1, border = border)
+        elseif tiling.get_up(tiling,i,j) == 2
+            luxor_func(i,j+1,i+1,j+1, border = border)
+        elseif tiling.get_up(tiling,i,j) == 3
+            luxor_func(i,j,i,j+1, border = border)
+        end
+        grestore()
+        gsave()
+        Luxor.translate(Point(xshift, yshift))
+        if tiling.get_down(tiling,i,j) == 1
+            luxor_func(i,j,i+1,j+1, border = border)
+        elseif tiling.get_down(tiling,i,j) == 2
+            luxor_func(i,j,i+1,j, border = border)
+        elseif tiling.get_down(tiling,i,j) == 3
+            luxor_func(i+1,j,i+1,j+1, border = border)
+        end
+        grestore()
+    end
+end
+
+function save_matching_to_luxor_file(tiling::CompositeTriTiling, luxor_func)
     @svg begin
-        for (i,j) in tiling.iterator_helper_array[1]
-            gsave()
-            if get_up(tiling,i,j) == 1
-                luxor_func(i,j,i+1,j+1)
-            elseif get_up(tiling,i,j) == 2
-                luxor_func(i,j+1,i+1,j+1)
-            elseif get_up(tiling,i,j) == 3
-                luxor_func(i,j,i,j+1)
+        full_matching_luxor(tiling, luxor_func)
+    end
+end
+
+function save_matching_to_luxor_file(tiling::PeriodicCompositeTriTiling, luxor_func)
+    xbound = tiling.domain_dimensions[1] - tiling.shift[1]
+    ybound = tiling.domain_dimensions[2] - tiling.shift[2]
+    @svg begin
+        for xshift in [-xbound, 0, xbound]
+            for yshift in [-ybound, 0, ybound]
+                full_matching_luxor(tiling, luxor_func, xshift = xshift, yshift = yshift)
             end
-            grestore()
-            gsave()
-            if get_down(tiling,i,j) == 1
-                luxor_func(i,j,i+1,j+1)
-            elseif get_down(tiling,i,j) == 2
-                luxor_func(i,j,i+1,j)
-            elseif get_down(tiling,i,j) == 3
-                luxor_func(i+1,j,i+1,j+1)
-            end
-            grestore()
         end
     end
 end
