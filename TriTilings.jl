@@ -33,7 +33,7 @@ function valid_tiling_at(tiling, i,j)
 end
 
 function lozenge_type_at(tiling, i, j)
-    values = [get_up(tiling,i,j), get_down(tiling,i,j), get_up(tiling,i,j-1), get_down(tiling,i-1,j-1), get_up(tiling,i-1,j-1), get_down(tiling,i-1,j)]
+    values = [tiling.get_up(tiling,i,j), tiling.get_down(tiling,i,j), tiling.get_up(tiling,i,j-1), tiling.get_down(tiling,i-1,j-1), tiling.get_up(tiling,i-1,j-1), tiling.get_down(tiling,i-1,j)]
     disconnected = [(values[i] == -1) || (values[i] == 0) || (values[i] == mod(i+1,1:3)) for i in 1:6]
     for i in 1:6
         if all([disconnected[mod(j,1:6)] for j in (i+2):(i+5)])

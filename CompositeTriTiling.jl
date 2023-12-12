@@ -6,35 +6,27 @@ include("AbstractCompositeTriTiling.jl")
 
 #################### SIMPLE DOMAINS ####################
 
-function set_up_or_equals!(tiling, x, y, value)
-    tiling.set_up!(tiling, x, y, value | tiling.get_up(tiling, x, y))
-end
-
-function set_down_or_equals!(tiling, x, y, value)
-    tiling.set_down!(tiling, x, y, value | tiling.get_down(tiling, x, y))
-end
-
 function add_axis_one_line!(tiling::AbstractCompositeTriTiling, l::Int64, x::Int64, y::Int64)
     if l%2 != 1
         throw(DomainError((l,1), "No tiling of the domain with such side lengths exists"))
     end
     #Set 16, 32, 64 components
     for i in 0:l
-        set_down_or_equals!(tiling, x+i-1, y+i, 16)
-        set_up_or_equals!( tiling, x+i, y+i-1,  32)
+        tiling.down_configs[x+i-1][y+i] |= 16
+        tiling.up_configs[x+i][y+i-1] |= 32
     end
     for i in 0:(l-1)
-        set_up_or_equals!( tiling, x+i, y+i, 24) #8+16
-        set_down_or_equals!(tiling, x+i, y+i, 40) #8+32
+        tiling.up_configs[x+i][y+i] |= 24 #8+16
+        tiling.down_configs[x+i][y+i] |= 40 #8+32
     end
-    set_down_or_equals!(tiling, x-1, y-1, 32)
-    set_up_or_equals!(tiling, x-1, y-1, 16)
-    set_up_or_equals!(tiling, x+l, y+l, 8)
-    set_up_or_equals!(tiling, x+l, y+l, 8)
+    tiling.down_configs[x-1][y-1] |= 32
+    tiling.up_configs[x-1][y-1] |= 16
+    tiling.up_configs[x+l][y+l] |= 8
+    tiling.up_configs[x+l][y+l] |= 8
     #Set 1,2,4 components
     for i in 0:2:(l-1)
-        set_up_or_equals!( tiling, x+i, y+i, 1)
-        set_down_or_equals!(tiling, x+i, y+i, 1)
+        tiling.up_configs[x+i][y+i] |= 1
+        tiling.down_configs[x+i][y+i] |= 1
     end
 end
 
@@ -45,21 +37,21 @@ function add_axis_two_line!(tiling::AbstractCompositeTriTiling, w::Int64, x::Int
     end
     #Set 16, 32, 64 components
     for i in 0:w
-        set_up_or_equals!( tiling, x+i, y, 8)
-        set_down_or_equals!(tiling, x+i-1, y-1, 32)
+        tiling.up_configs[x+i][y] |= 8
+        tiling.down_configs[x+i-1][y-1] |= 32
     end
     for i in 0:(w-1)
-        set_down_or_equals!(tiling, x+i, y, 24) #8+16
-        set_up_or_equals!( tiling, x+i, y-1, 48) #16+32
+        tiling.down_configs[x+i][y] |= 24 #8+16
+        tiling.up_configs[x+i][y-1] |= 48 #16+32
     end
-    set_up_or_equals!(tiling, x-1, y-1, 16)
-    set_down_or_equals!(tiling, x-1, y, 16)
-    set_up_or_equals!(tiling, x+w, y-1, 32)
-    set_down_or_equals!(tiling, x+w, y, 8)
+    tiling.up_configs[x-1][y-1] |= 16
+    tiling.down_configs[x-1][y] |= 16
+    tiling.up_configs[x+w][y-1] |= 32
+    tiling.down_configs[x+w][y] |= 8
     #Set 1,2,4 components
     for i in 0:2:(w-1)
-        set_up_or_equals!( tiling, x+i, y-1, 2)
-        set_down_or_equals!(tiling, x+i, y, 2)
+        tiling.up_configs[x+i][y-1] |= 2
+        tiling.down_configs[x+i][y] |= 2
     end
 end
 
@@ -69,21 +61,21 @@ function add_axis_three_line!(tiling::AbstractCompositeTriTiling, l::Int64, x::I
     end
     #Set 16, 32, 64 components
     for i in 0:l
-        set_down_or_equals!(tiling, x, y+i, 8)
-        set_up_or_equals!( tiling, x-1, y+i-1, 16)
+        tiling.down_configs[x][y+i] |= 8
+        tiling.up_configs[x-1][y+i-1] |= 16
     end
     for i in 0:(l-1)
-        set_down_or_equals!(tiling, x-1, y+i, 48) #8+16
-        set_up_or_equals!( tiling, x, y+i, 40) #16+32
+        tiling.down_configs[x-1][y+i] |= 48 #8+16
+        tiling.up_configs[x][y+i] |= 40 #16+32
     end
-    set_down_or_equals!(tiling, x-1, y-1, 32)
-    set_up_or_equals!(tiling, x, y-1, 32)
-    set_up_or_equals!(tiling, x, y+l, 8)
-    set_down_or_equals!(tiling, x-1, y+l, 16)
+    tiling.down_configs[x-1][y-1] |= 32
+    tiling.up_configs[x][y-1] |= 32
+    tiling.up_configs[x][y+l] |= 8
+    tiling.down_configs[x-1][y+l] |= 16
     #Set 1,2,4 components
     for i in 0:2:(l-1)
-        set_up_or_equals!( tiling, x, y+i, 4)
-        set_down_or_equals!(tiling, x-1, y+i, 4)
+        tiling.up_configs[x][y+i] |= 4
+        tiling.down_configs[x-1][y+i] |= 4
     end
 end
 
