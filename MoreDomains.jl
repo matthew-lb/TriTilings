@@ -37,7 +37,7 @@ function ice_cream(num_rows::Int64)
     return curve_boundaries(num_rows, x->-sqrt(3)/4*sqrt(1-(2x-1)^2), x-> .5 - abs(.5 - x))
 end #TEST IT
 
-function circle(num_rows::Int64)
+function circle_boundary(num_rows::Int64)
     return curve_boundaries(num_rows, x->-sqrt(3)/4*sqrt(1-(2x-1)^2), x->sqrt(3)/4*sqrt(1-(2x-1)^2))
 end #COMPLETE
 
@@ -70,10 +70,10 @@ function giant_bibone(l::Int64; singly_periodic = false)
     end
     #x goes from 2 to 4l + 2 
     #y goes from 1 to 4l + 1 if periodic and 2 to 4l + 2 otherwise
-    domain_dimensions = [4l + 3, 4l + 3]
+    domain_dimensions = [3*l + 3, 4*l + 3]
     x,y = 2, 2
     if singly_periodic
-        domain_dimensions[1] = 4l + 1
+        domain_dimensions[1] = 3*l + 1
         y = 1
     end
     composite_domains = []
@@ -83,11 +83,11 @@ function giant_bibone(l::Int64; singly_periodic = false)
     if singly_periodic
         return PeriodicCompositeTriTiling(domain_dimensions = domain_dimensions,
                                           composite_domains = composite_domains,
-                                          shift = (0, 2*l + 1))
+                                          shift = (0, 3*l + 1))
     end
     return CompositeTriTiling(domain_dimensions = domain_dimensions,
                               composite_domains = composite_domains)
-end  #TEST IT
+end
 
 #= TO IMPLEMENT 
 function giant_E(approx_num_rows::Int64)
