@@ -249,8 +249,8 @@ function luxor_dimer(i1,j1,i2,j2; border = false, e_col = "lightblue", se_col = 
     end
 end
 
-function full_matching_luxor(tiling::AbstractCompositeTriTiling, luxor_func; xshift = 0, yshift = 0)
-    border = (typeof(tiling) == PeriodicCompositeTriTiling)
+function full_matching_luxor(tiling::AbstractCompositeTriTiling, luxor_func; xshift = 0, yshift = 0, bordered = true)
+    border = (typeof(tiling) == PeriodicCompositeTriTiling) && bordered
     xshift,yshift = luxor_coors(xshift, yshift)
     for (i,j) in tiling.iterator_helper_array[1]
         gsave()
@@ -282,15 +282,34 @@ function save_matching_to_luxor_file(tiling::CompositeTriTiling, luxor_func, fil
     finish()
 end
 
-function save_matching_to_luxor_file(tiling::PeriodicCompositeTriTiling, luxor_func, filename; xdim = 500, ydim = 500)
-    xbound = tiling.domain_dimensions[1] - tiling.shift[1]
-    ybound = tiling.domain_dimensions[2] - tiling.shift[2]
-    Drawing(xdim, ydim, "img/"*filename)
-    origin()
-    for xshift in [-xbound, 0, xbound]
-        for yshift in [-ybound, 0, ybound]
-            full_matching_luxor(tiling, luxor_func, xshift = xshift, yshift = yshift)
+function add_boundary(tiling::PeriodicCompositeTriTiling)
+    setcolor("red")
+    for (i,j) in tiling.iterator_helper_array[1]
+        on_boundary = (i == 1) || (i == tiling.domain_dimensions[2]) || (j == 1) || (j == tiling.domain_dimensions[1])
+        if !on_boundary
+            neighbor_values = [tiling.get_up(tiling,i,j), tiling.get_down(tiling,i,j), tiling.get_up(tiling,i,j-1), tiling.get_down(tiling,i-1,j-1), tiling.get_up(tiling,i-1,j-1), tiling.get_down(tiling,i-1,j)]
+            for value in neighbor_values
+                on_boundary == on_boundary || (value == -1)
+            end
+        end
+        if on_boundary
+            x,y = luxor_coors(i,j)
+            circle(x, y, .2, action = :fill)
         end
     end
+end
+
+function save_matching_to_luxor_file(tiling::PeriodicCompositeTriTiling, luxor_func, filename; xdim = 500, ydim = 500)
+    ybound = (tiling.shift[2], tiling.domain_dimensions[1])
+    xbound = (tiling.domain_dimensions[2], tiling.shift[1])
+    Drawing(xdim, ydim, "img/"*filename)
+    origin()
+    for p in [-1, 0, 1]
+        for q in [-1, 0, 1]
+            xshift, yshift = p .* xbound .+ q .* ybound
+            full_matching_luxor(tiling, luxor_func, xshift = xshift, yshift = yshift, bordered = false)
+        end
+    end
+    add_boundary(tiling)
     finish()
 end

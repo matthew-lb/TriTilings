@@ -69,6 +69,9 @@ end
     composite_domains::Vector{Tuple{Any,Any}} = []
 end
 
+#shift = (y, x) how much the coor shifts when the other one overfills
+
+
 function add_to_iterator_helper!(tiling::CompositeTriTiling, x::Int64, y::Int64)
     push!(tiling.iterator_helper_array[1], (x,y))
     for axis in 1:3
