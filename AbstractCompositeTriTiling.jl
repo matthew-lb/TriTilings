@@ -45,7 +45,7 @@ abstract type AbstractCompositeTriTiling <: TriTiling end
 @kwdef mutable struct CompositeTriTiling <: AbstractCompositeTriTiling
     up_configs::Vector{Vector{Int64}} = [[Int64(1)]]
     down_configs::Vector{Vector{Int64}} = [[Int64(1)]]
-    iterate::Function
+    iterate::Function = composite_iterator
     get_up::Function = generic_get_up
     get_down::Function = generic_get_down
     set_up!::Function = generic_set_up!
@@ -58,7 +58,7 @@ end
 @kwdef mutable struct PeriodicCompositeTriTiling <: AbstractCompositeTriTiling
     up_configs::Vector{Vector{Int64}} = [[Int64(1)]]
     down_configs::Vector{Vector{Int64}} = [[Int64(1)]]
-    iterate::Function
+    iterate::Function = periodic_iterator
     get_up::Function = periodic_get_up
     get_down::Function = periodic_get_down
     set_up!::Function = periodic_set_up!

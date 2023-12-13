@@ -150,8 +150,38 @@ function add_rectangle!(tiling::AbstractCompositeTriTiling, l::Int64, w::Int64, 
     end
 end
 
-function add_up_trapezoid!(tiling::AbstractCompositeTriTiling, l::Int64, w::Int64)
-end
+function add_up_trapezoid!(tiling::AbstractCompositeTriTiling, l::Int64, w::Int64, x::Int64, y::Int64)
+    if (w%2 != 1) || (l%4 != 3 && l%4 != 0)
+        throw(DomainError((l,w), "Tiling of the domain either does not exist or has not been implemented"))
+    end
+    if l % 4 == 0
+        add_axis_two_line!(tiling, w + l, x, y + l)
+        add_up_trapezoid!(tiling, l - 1, w, x, y)
+    else
+        add_parallelogram!(tiling, l, w, x, y, 1)
+        add_axis_one_line!(tiling, 1, x + w + 1, y + 1)
+        add_axis_two_line!(tiling, 1, x + w + 2, y + 3)
+        add_axis_three_line!(tiling, 1, x + w + 1, y + 2)
+        if l > 3
+            add_up_trapezoid!(tiling, l - 4, 3, x + w + 1, y + 4)
+        end
+    end
+end 
 
-function add_down_trapezoid!(tiling::AbstractCompositeTriTiling, l::Int64, w::Int64)
+function add_down_trapezoid!(tiling::AbstractCompositeTriTiling, l::Int64, w::Int64, x::Int64, y::Int64) #w refers to lower boundary
+    if (w%2 != 1) || (l%4 != 3 && l%4 != 0)
+        throw(DomainError((l,w), "Tiling of the domain either does not exist or has not been implemented"))
+    end
+    if l % 4 == 0
+        add_axis_two_line!(tiling, w + l, x, y)
+        add_down_trapezoid!(tiling, l - 1, w, x+1, y+1)
+    else
+        add_parallelogram!(tiling, l, w, x+l, y, 1)
+        add_axis_one_line!(tiling, 1, x + l - 2, y + l - 2)
+        add_axis_two_line!(tiling, 1, x + l - 3, y + l - 3)
+        add_axis_three_line!(tiling, 1, x + l - 1, y + l - 3)
+        if l > 3
+            add_down_trapezoid!(tiling, l - 4, 3, x, y)
+        end
+    end
 end

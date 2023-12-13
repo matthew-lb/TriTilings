@@ -278,6 +278,7 @@ end
 
 function save_matching_to_luxor_file(tiling::CompositeTriTiling, luxor_func, filename; xdim = 500, ydim = 500)
     Drawing(xdim, ydim, "img/"*filename)
+    origin()
     full_matching_luxor(tiling, luxor_func)
     finish()
 end
