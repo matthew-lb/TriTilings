@@ -12,18 +12,32 @@ include("TriTilings.jl")
     domain_dimensions::Vector{Int64} = [1,1]
 end
 
-function shift_in_bounds(tiling, x, y)
+function simple_shift_in_bounds(tiling, x, y)
     if y <= 0
-        y += tiling.domain_dimensions[1] - tiling.shift[1]
+        y += tiling.domain_dimensions[1]
     elseif y > tiling.domain_dimensions[1]
-        y -= tiling.domain_dimensions[1] - tiling.shift[1]
+        y -= tiling.domain_dimensions[1]
     end
     if x <= 0
-        x += tiling.domain_dimensions[2] - tiling.shift[2]
+        x += tiling.domain_dimensions[2]
     elseif x > tiling.domain_dimensions[2]
-        x -= tiling.domain_dimensions[2] - tiling.shift[2]
+        x -= tiling.domain_dimensions[2]
     end
     return (x,y)
+end
+
+function shift_in_bounds(tiling, x, y)
+    if y <= 0
+        x += tiling.shift[2]
+    elseif y > tiling.domain_dimensions[1]
+        x -= tiling.shift[2]
+    end
+    if x <= 0
+        y += tiling.shift[1]
+    elseif x > tiling.domain_dimensions[2]
+        y -= tiling.shift[1]
+    end
+    return simple_shift_in_bounds(tiling, x, y)
 end
 
 function periodic_get_up(tiling, x, y; axes = [])
