@@ -28,23 +28,66 @@ rng_seeds = [Future.randjump(Random.MersenneTwister(0), i*big(10)^20) for i in 1
 
 abstract type TriTiling end
 
-function valid_tiling_at(tiling, i,j)
-    return lozenge_type_at(tiling, i, j) != 0
-end
 
-function lozenge_type_at(tiling, i, j)
+function paired_direction(tiling, i, j)
     values = [tiling.get_up(tiling,i,j), tiling.get_down(tiling,i,j), tiling.get_up(tiling,i,j-1), tiling.get_down(tiling,i-1,j-1), tiling.get_up(tiling,i-1,j-1), tiling.get_down(tiling,i-1,j)]
     disconnected = [(values[i] == -1) || (values[i] == 0) || (values[i] == mod(i+1,1:3)) for i in 1:6]
     for i in 1:6
         if all([disconnected[mod(j,1:6)] for j in (i+2):(i+5)])
             if (values[i] == values[mod(i+1,1:6)]) && (values[i] == mod(i,1:3))
-                return mod(i,1:3)
+                return i
             elseif (values[i] == -1) && (values[mod(i+1,1:6)] == mod(i,1:3))
-                return mod(i,1:3)
+                return i
             elseif (values[i] == mod(i,1:3)) && (values[mod(i+1,1:6)] == -1)
-                return mod(i,1:3)
+                return i
             end
         end
     end
     return 0
+end
+
+function paired_with(tiling, i, j)
+    r = paired_direction(tiling, i, j)
+    if r == 0
+        throw(ErrorException("Not a valid tiling"))
+    elseif r == 1
+        return i+1,j+1
+    elseif r == 2
+        return i+1,j
+    elseif r == 3
+        return i,j-1
+    elseif r == 4
+        return i-1,j-1
+    elseif r == 5
+        return i-1,j
+    else
+        return i,j+1
+    end
+end
+
+function lozenge_type_at(tiling, i, j)
+    pd = paired_direction(tiling, i, j)
+    if pd == 0
+        return 0
+    end
+    return mod(pd,1:3)
+end
+
+function valid_tiling_at(tiling, i,j)
+    return paired_direction(tiling, i, j) != 0
+end
+
+#sub_domain will be a collection of points relative to [0,0]
+#implement first w/o error handling
+
+function is_subdomain_of(tiling, sub_domain, i, j)
+    for (x,y) in sub_domain
+        xp,yp = paired_with(tiling, x+i, y+j)
+        xp -= i
+        yp -= j
+        if !((xp, yp) in sub_domain)
+            return false
+        end
+    end
+    return true
 end
