@@ -34,7 +34,7 @@ function curve_boundaries(num_rows::Int64, left_curve::Function, right_curve::Fu
 end
 
 function ice_cream(num_rows::Int64)
-    return curve_boundaries(num_rows, x->-sqrt(3)/4*sqrt(1-(2x-1)^2), x-> .5 - abs(.5 - x))
+    return curve_boundaries(num_rows, x->-sqrt(3)/4*sqrt(1-(2x-1)^2), x-> 1.5*(.5 - abs(.5 - x)))
 end #TEST IT
 
 function circle_boundary(num_rows::Int64)
@@ -51,17 +51,17 @@ function any_parallelogram(l::Int64, w::Int64; x_periodic = false, y_periodic = 
         constructor = CompositeTriTiling
     end
     lstart, rstart = 1, 1
-    lbound, rbound = l+1, w+1
-    if x_periodic
+    lbound, rbound = w+1, l+1
+    if !x_periodic
         lstart += 1
         lbound += 2
     end
-    if y_periodic
+    if !y_periodic
         rstart += 1
-        rbound += 1
+        rbound += 2
     end
-    return constructor(domain_dimensions = [lbound, rbound],
-                       composite_domains = (add_parallelogram!, (l, w, lstart, rstart)))
+    return constructor(domain_dimensions = [rbound, lbound],
+                       composite_domains = [(add_parallelogram!, (l, w, lstart, rstart, 1))])
 end #TEST IT
 
 function giant_bibone(l::Int64; singly_periodic = false)
@@ -89,18 +89,18 @@ function giant_bibone(l::Int64; singly_periodic = false)
                               composite_domains = composite_domains)
 end
 
-#= TO IMPLEMENT 
 function giant_E(approx_num_rows::Int64)
-    num_rows = 
-    return CompositeTriTiling(domain_dimensions = [72, 120],
-                              composite_domains = [(add_rectangle!, (16, 40, 2, 2)),
-                                                   (add_rectangle!, (12, 14, 10, 18)),
-                                                   (add_rectangle!, (12, 28, 16, 30)),
-                                                   (add_rectangle!, (12, 14, 22, 42)),
-                                                   (add_rectangle!, (16, 40, 28, 54))]
-)
+    row = div(approx_num_rows, 68)
+    return CompositeTriTiling(domain_dimensions = [3+68*row, 3+92*row],
+                              composite_domains = [(add_rectangle!, (16*row, 40*row, 2, 2)),
+                                                   (add_rectangle!, (12*row, 14*row, 2+8*row, 2+16*row)),
+                                                   (add_rectangle!, (12*row, 28*row, 2+14*row, 2+28*row)),
+                                                   (add_rectangle!, (12*row, 14*row, 2+20*row, 2+40*row)),
+                                                   (add_rectangle!, (16*row, 40*row, 2+26*row, 2+52*row))])
 end
 
+
+#= TO IMPLEMENT 
 function parallelogram_bridge(l1::Int64, w1::Int64, l2::Int64, w2::Int64, l3::Int64, w3::Int64)
 end
 
@@ -112,6 +112,8 @@ function any_rectangle(l::Int64, w::Int64; singly_periodic = false)
 end 
 
 =#
+
+
 
 
 

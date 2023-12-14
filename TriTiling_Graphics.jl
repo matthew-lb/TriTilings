@@ -300,13 +300,20 @@ function add_boundary(tiling::PeriodicCompositeTriTiling)
     end
 end
 
-function save_matching_to_luxor_file(tiling::PeriodicCompositeTriTiling, luxor_func, filename; xdim = 500, ydim = 500)
+function save_matching_to_luxor_file(tiling::PeriodicCompositeTriTiling, luxor_func, filename; xperiodic = true, yperiodic = true, xdim = 500, ydim = 500)
     ybound = (tiling.shift[2], tiling.domain_dimensions[1])
     xbound = (tiling.domain_dimensions[2], tiling.shift[1])
     Drawing(xdim, ydim, "img/"*filename)
     origin()
-    for p in [-1, 0, 1]
-        for q in [-1, 0, 1]
+    pset, qset = [0], [0]
+    if xperiodic
+        pset = [-1, 0, 1]
+    end
+    if yperiodic
+        qset = [-1, 0, 1]
+    end
+    for p in pset
+        for q in qset
             xshift, yshift = p .* xbound .+ q .* ybound
             full_matching_luxor(tiling, luxor_func, xshift = xshift, yshift = yshift, bordered = false)
         end

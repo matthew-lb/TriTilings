@@ -141,15 +141,21 @@ end
 function composite_iterator(tiling::CompositeTriTiling, update_type::Function; axis::Int64 = 1, color::Int64 = 0, is_up::Bool = true)
     if update_type == update_triangle!
         for (x,y) in tiling.iterator_helper_array[1]
-            update_type(tiling, x, y, is_up)
+            if rand(rng_seeds[Threads.threadid()]) < .5
+                update_type(tiling, x, y, is_up)
+            end
         end
     elseif update_type == update_lozenge!
         for (x,y) in tiling.iterator_helper_array[2*axis + color]
-            update_type(tiling, x, y, axis)
+            if rand(rng_seeds[Threads.threadid()]) < .5
+                update_type(tiling, x, y, axis)
+            end
         end
     elseif update_type == update_butterfly!
         for (x,y) in tiling.iterator_helper_array[5 + 3*axis + color]
-            update_type(tiling, x, y, axis)
+            if rand(rng_seeds[Threads.threadid()]) < .5
+                update_type(tiling, x, y, axis)
+            end
         end
     end
 end
@@ -157,11 +163,15 @@ end
 function periodic_iterator(tiling::PeriodicCompositeTriTiling, update_type::Function; axis::Int64 = 1, color::Int64 = 0, is_up::Bool = true)
     if update_type == update_triangle!
         for (x,y) in tiling.iterator_helper_array[1]
-            update_type(tiling, x, y, is_up)
+            if rand(rng_seeds[Threads.threadid()]) < .5
+                update_type(tiling, x, y, is_up)
+            end
         end
     elseif update_type == update_lozenge! || update_type == update_butterfly!
         for (x,y) in tiling.iterator_helper_array[1]
-            update_type(tiling, x, y, axis)
+            if rand(rng_seeds[Threads.threadid()]) < .5
+                update_type(tiling, x, y, axis)
+            end
         end
     end
 end
