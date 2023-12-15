@@ -41,7 +41,7 @@ function circle_boundary(num_rows::Int64)
     return curve_boundaries(num_rows, x->-sqrt(3)/4*sqrt(1-(2x-1)^2), x->sqrt(3)/4*sqrt(1-(2x-1)^2))
 end #COMPLETE
 
-function any_parallelogram(l::Int64, w::Int64; x_periodic = false, y_periodic = false)
+function any_parallelogram(l::Int64, w::Int64, x_periodic = false, y_periodic = false)
     if (l%2 == 0) && (w%2 == 0)
         throw(DomainError((l,w), "No tiling of the domain with such side lengths exists"))
     end
@@ -64,7 +64,7 @@ function any_parallelogram(l::Int64, w::Int64; x_periodic = false, y_periodic = 
                        composite_domains = [(add_parallelogram!, (l, w, lstart, rstart, 1))])
 end #TEST IT
 
-function giant_bibone(l::Int64; singly_periodic = false)
+function giant_bibone(l::Int64, singly_periodic = false)
     if l%4 != 1
         throw(DomainError(l, "Tiling of this domain either doesn't exist or is yet to be implemented"))
     end
@@ -91,7 +91,7 @@ end
 
 function giant_E(approx_num_rows::Int64)
     row = div(approx_num_rows, 68)
-    return CompositeTriTiling(domain_dimensions = [3+68*row, 3+92*row],
+    return CompositeTriTiling(domain_dimensions = [3+68*row, 3+74*row],
                               composite_domains = [(add_rectangle!, (16*row, 40*row, 2, 2)),
                                                    (add_rectangle!, (12*row, 14*row, 2+8*row, 2+16*row)),
                                                    (add_rectangle!, (12*row, 28*row, 2+14*row, 2+28*row)),
@@ -99,21 +99,33 @@ function giant_E(approx_num_rows::Int64)
                                                    (add_rectangle!, (16*row, 40*row, 2+26*row, 2+52*row))])
 end
 
+function any_rectangle(l::Int64, w::Int64, singly_periodic = false)
+    if (w%2 != 0) || (l%4 != 0)
+        throw(DomainError((l,w), "No tiling of the domain (rectangle) with such side lengths exists"))
+    end
+    if !singly_periodic
+        return CompositeTriTiling(domain_dimensions = [l + 2, div(l,2) + w + 3],
+                                  composite_domains = [(add_rectangle!, (l, w, 2, 2))])
+    end
+    return PeriodicCompositeTriTiling(domain_dimensions = [l, div(l,2) + w + 3],
+                                      composite_domains = [(add_rectangle!, (l, w, 2, 1))])
+end
+
+function up_trapezoid(l::Int64, w::Int64, singly_periodic = false)
+    if (w%2 != 1) || (l%4 != 3 && l%4 != 0)
+        throw(DomainError((l,w), "Tiling of the domain either does not exist or has not been implemented"))
+    end
+    if !singly_periodic
+        return CompositeTriTiling(domain_dimensions = [l+3, w + l + 3],
+                                  composite_domains = [(add_up_trapezoid!, (l, w, 2, 2))])
+    end
+    return PeriodicCompositeTriTiling(domain_dimensions = [l+1, w + l + 3],
+                                      composite_domains = [(add_up_trapezoid!, (l, w, 2, 1))])
+end
+
 
 #= TO IMPLEMENT 
 function parallelogram_bridge(l1::Int64, w1::Int64, l2::Int64, w2::Int64, l3::Int64, w3::Int64)
 end
 
-function any_rectangle(l::Int64, w::Int64; singly_periodic = false)
-    if (l%4) != 2
-        throw(DomainError(l, "Tiling of this domain does not exist or has not been implemented"))
-    end
-    push!(composite_domains, (add_))
-end 
-
 =#
-
-
-
-
-

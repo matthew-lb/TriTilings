@@ -35,7 +35,7 @@ The initalizer for composite domains will be composite_initalizer which will
 Steps (4), (5) will be accomplished by the function convert_temporary_configurations
 =#
 
-using .Threads
+#using .Threads
 include("TriTilings.jl")
 include("GenericTriTiling.jl")
 include("PeriodicTriTiling.jl")
