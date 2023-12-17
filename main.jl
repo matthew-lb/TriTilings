@@ -1,4 +1,3 @@
-using Base.Threads
 using DelimitedFiles
 using Printf
 using Statistics
@@ -9,7 +8,7 @@ include("MoreDomains.jl")
 
 #Aim for 2 million nodes per region
 
-domains = [(circle_boundary, (1600)),
+const domains = [(circle_boundary, (1600)),
            (any_parallelogram, (1399, 1399)),
            (any_parallelogram, (1399, 1399, true)),
            (any_parallelogram, (1399, 1399, true, true)),
@@ -26,7 +25,7 @@ domains = [(circle_boundary, (1600)),
            (any_rectangle,     (1000, 1800)),
            (any_rectangle,     (1000, 1800, true))]
 
-local_points = [[(.5, .5), (.4, .75), (.3, .15), (.85, .7)],
+const local_points = [[(.5, .5), (.4, .75), (.3, .15), (.85, .7)],
                 [(.5, .5), (.1,.6), (.9, .7), (.8, .45)],
                 [(.5, .5), (.1,.6), (.9, .7), (.8, .45)],
                 [(.5, .5), (.1,.6), (.9, .7), (.8, .45)],
@@ -81,16 +80,16 @@ num_shapes = length(shapes) + 5
 
 num_tries = 3
 
-iters = num_domain*num_tries*num_shapes
+#iters = num_domain*num_tries*num_shapes
 
-updates = 10
+updates = 25
 
 radius = 30
 
 sample_size = (2*radius + 1)^2
 
-all_values = [[["" for i in 1:(4*num_tries)] for j in 1:num_domain] for k in 1:num_shapes]
-just_ratios = [[0.0 for i in 1:(4*num_tries*num_domain)] for k in 1:num_shapes]
+#all_values = [[["" for i in 1:(4*num_tries)] for j in 1:num_domain] for k in 1:num_shapes]
+#just_ratios = [[0.0 for i in 1:(4*num_tries*num_domain)] for k in 1:num_shapes]
 
 function save_result(indic)
     domain_indic = mod(indic, 1:num_domain)
@@ -108,7 +107,7 @@ function save_result(indic)
     global just_ratios
     for j in 1:4
         p,q = local_points[domain_indic][j]
-        println(p,q)
+       #println(p,q)
         if shape_indic <= length(shapes)
             ratio = local_ratios(domain, p, q, radius, [shapes[shape_indic]])[1]/sample_size
         elseif shape_indic <= length(shapes) + 3
@@ -116,11 +115,13 @@ function save_result(indic)
         else
             ratio = count_triangles(domain, p, q, radius, (shape_indic - length(shapes) == 4))/sample_size
         end
-        just_ratios[shape_indic][(domain_indic - 1)*(num_tries * 4) + 4*(num_try-1) + j] = ratio
-        all_values[shape_indic][domain_indic][4*(num_try-1) + j] = string(p)*"-"*string(q)*":"*string(ratio)
+	return string(shape_indic)*"_"*string(domain_indic)*"_"*string(p)*"_"*string(q)*"_"*string(num_try)*"_"*string(ratio)
+        #just_ratios[shape_indic][(domain_indic - 1)*(num_tries * 4) + 4*(num_try-1) + j] = ratio
+        #all_values[shape_indic][domain_indic][4*(num_try-1) + j] = string(p)*"-"*string(q)*":"*string(ratio)
     end
 end
 
+#=
 function save_values_to_file()
     global all_values
     global just_ratios
@@ -141,10 +142,8 @@ function save_values_to_file()
         writedlm(io, stats, ", ")
     end
 end
+=#
 
+println(save_result(parse(Int64, ARGS[1])))
 
-Threads.@threads for i in 0:(iters-1)
-    save_result(i)
-end
-
-save_values_to_file()
+#save_values_to_file()
