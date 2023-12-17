@@ -8,11 +8,11 @@ num_domain = 16
 
 num_shapes = 19
 
-num_tries = 3
+num_tries = 6
 
-#iters = num_domain*num_tries*num_shapes
+iters = num_domain*num_tries*num_shapes
 
-updates = 25
+updates = 50
 
 radius = 30
 
@@ -21,16 +21,17 @@ sample_size = (2*radius + 1)^2
 all_values = [[[] for j in 1:num_domain] for k in 1:num_shapes]
 just_ratios = [[] for k in 1:num_shapes]
 
-for i in 0:911
+for i in 0:(iters-1)
 	open("full_output/"*string(i)*".out") do io
-		x = read(io, String)
-		shape, domain, p, q, num_try, ratio = split(x, "_")
-		domain = parse(Int64, domain)
-		shape = parse(Int64, shape)
-		num_try = parse(Int64, num_try)
-		ratio = parse(Float64, ratio)
-		push!(just_ratios[shape], ratio)
-		push!(all_values[shape][domain], p*"_"*q*"_"*string(num_try)*"_"*string(ratio))
+		for x in eachline(io)
+			shape, domain, p, q, num_try, ratio = split(x, "_")
+			domain = parse(Int64, domain)
+			shape = parse(Int64, shape)
+			num_try = parse(Int64, num_try)
+			ratio = parse(Float64, ratio)
+			push!(just_ratios[shape], ratio)
+			push!(all_values[shape][domain], p*"_"*q*"_"*string(num_try)*"_"*string(ratio))
+		end
 	end
 end
 

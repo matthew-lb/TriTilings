@@ -78,11 +78,11 @@ num_domain = length(domains)
 
 num_shapes = length(shapes) + 5
 
-num_tries = 3
+num_tries = 6
 
 #iters = num_domain*num_tries*num_shapes
 
-updates = 25
+updates = 50
 
 radius = 30
 
@@ -105,6 +105,7 @@ function save_result(indic)
     num_try = mod(indic_rem, 1:3)
     global all_values
     global just_ratios
+    outputs = []
     for j in 1:4
         p,q = local_points[domain_indic][j]
        #println(p,q)
@@ -115,10 +116,11 @@ function save_result(indic)
         else
             ratio = count_triangles(domain, p, q, radius, (shape_indic - length(shapes) == 4))/sample_size
         end
-	return string(shape_indic)*"_"*string(domain_indic)*"_"*string(p)*"_"*string(q)*"_"*string(num_try)*"_"*string(ratio)
+	push!(outputs, string(shape_indic)*"_"*string(domain_indic)*"_"*string(p)*"_"*string(q)*"_"*string(num_try)*"_"*string(ratio))
         #just_ratios[shape_indic][(domain_indic - 1)*(num_tries * 4) + 4*(num_try-1) + j] = ratio
         #all_values[shape_indic][domain_indic][4*(num_try-1) + j] = string(p)*"-"*string(q)*":"*string(ratio)
     end
+    return outputs
 end
 
 #=
@@ -144,6 +146,10 @@ function save_values_to_file()
 end
 =#
 
-println(save_result(parse(Int64, ARGS[1])))
+outputs = save_result(parse(Int64, ARGS[1]))
+
+for output in outputs
+	println(output)
+end
 
 #save_values_to_file()
