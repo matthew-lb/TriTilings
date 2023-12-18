@@ -82,7 +82,7 @@ num_tries = 6
 
 #iters = num_domain*num_tries*num_shapes
 
-updates = 50
+updates = 60
 
 radius = 30
 
@@ -92,6 +92,8 @@ sample_size = (2*radius + 1)^2
 #just_ratios = [[0.0 for i in 1:(4*num_tries*num_domain)] for k in 1:num_shapes]
 
 function save_result(indic)
+    global rng_seeds
+    rng_seeds[1] = Future.randjump(Random.MersenneTwister(0), indic*big(10)^20)
     domain_indic = mod(indic, 1:num_domain)
     constructor = domains[domain_indic][1]
     domain = constructor(domains[domain_indic][2]...)
@@ -102,7 +104,7 @@ function save_result(indic)
     indic_rem = div(indic, num_domain)
     shape_indic = mod(indic_rem, 1:num_shapes)
     indic_rem = div(indic_rem, num_shapes)
-    num_try = mod(indic_rem, 1:3)
+    num_try = mod(indic_rem, 1:6)
     global all_values
     global just_ratios
     outputs = []
