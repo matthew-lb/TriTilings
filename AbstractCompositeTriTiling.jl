@@ -53,6 +53,7 @@ abstract type AbstractCompositeTriTiling <: TriTiling end
     iterator_helper_array::Vector{Vector{Tuple{Int64, Int64}}} = [[(1,1)]]
     domain_dimensions::Vector{Int64} = [1,1]
     composite_domains::Vector{Tuple{Any,Any}} = []
+    weight = nothing #takes in vertex, axis
 end
 
 @kwdef mutable struct PeriodicCompositeTriTiling <: AbstractCompositeTriTiling
@@ -67,6 +68,7 @@ end
     iterator_helper_array::Vector{Vector{Tuple{Int64, Int64}}} = [[]]
     domain_dimensions::Vector{Int64} = [1,1]
     composite_domains::Vector{Tuple{Any,Any}} = []
+    weight = nothing
 end
 
 #shift = (y, x) how much the coor shifts when the other one overfills
