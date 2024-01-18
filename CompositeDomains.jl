@@ -1,5 +1,8 @@
 #=
 Implements Several Simple Domains for TriTilings
+
+Functions here serve as inputs for composite_domains
+In contrast MoreDomains.jl returns AbstractCompositeTriTiling objects
 =#
 
 include("AbstractCompositeTriTiling.jl")

@@ -33,6 +33,37 @@ function curve_boundaries(num_rows::Int64, left_curve::Function, right_curve::Fu
                               composite_domains = composite_domains)
 end
 
+function from_edge_set(edges::Vector{Tuple{Int64, Int64, Int64, Int64}})
+    composite_domains = []
+    edge_dict = Dict{Tuple{Int64, Int64}, Tuple{Int64, Int64}}
+    domain_dimensions = [3,3]
+    for (x1,y1,x2,y2) in edges
+        if (haskey(edge_dict, (x1,y1)) && edge_dict[(x1,y1)] != (x2,y2)) || (haskey(edge_dict, (x2,y2)) && edge_dict[(x2,y2)] != (x1,y1))
+            Throw(ArgumentError("Edge set inputted not a valid perfect matching"))
+        end
+        domain_dimensions[1] = max(x1 + 1, x2 + 1, domain_dimensions[1])
+        domain_dimensions[2] = max(y1 + 1, y2 + 1, domain_dimensions[2])
+        if (x2 = x1 + 1) && (y2 = y1 + 1)
+            push!(composite_domains, (add_axis_one_line!, (1, x1, y1)))
+        elseif (x2 = x1 - 1) && (y2 = y1 - 1)
+            push!(composite_domains, (add_axis_one_line!, (1, x2, y2)))
+        elseif (x2 = x1 + 1) && (y2 = y1)
+            push!(composite_domains, (add_axis_two_line!, (1, x1, y1)))
+        elseif (x2 = x1 - 1) && (y2 = y1)
+            push!(composite_domains, (add_axis_two_line!, (1, x2, y2)))
+        elseif (x2 = x1) && (y2 = y1 + 1)
+            push!(composite_domains, (add_axis_three_line!, (1, x1, y1)))
+        elseif (x2 = x1) && (y2 = y1 - 1)
+            push!(composite_domains, (add_axis_three_line!, (1, x2, y2)))
+        else
+            Throw(ArgumentError("Not all edges entered lie in triangular lattice"))
+        end
+    end
+    return CompositeTriTiling(iterate = composite_iterator,
+                              domain_dimensions = domain_dimensions,
+                              composite_domains = composite_domains)
+end
+
 function ice_cream(num_rows::Int64)
     return curve_boundaries(num_rows, x->-sqrt(3)/4*sqrt(1-(2x-1)^2), x-> 1.5*(.5 - abs(.5 - x)))
 end #TEST IT
@@ -137,6 +168,29 @@ function holy_parallelogram(l::Int64,w::Int64)
         end
     end
     return CompositeTriTiling(domain_dimensions = [6 + 3*l, 6 + 3*w],
+                              composite_domains = composite_domains)
+end
+
+function odd_holy_parallelogram(l::Int64, flip = false, flipped_coor = l)
+    if (l%2 == 0)
+        throw(DomainError(l, "Parameter must be odd."))
+    end
+    composite_domains = []
+    domain_dimensions = [2+3*l, 2+3*l]
+    for i in 1:l
+        if (i == flipped_coor) && flip
+            push!(composite_domains, (add_axis_two_line!, (3*l - 2*i, 2 + i, 1 + i)))
+            push!(composite_domains, (add_axis_two_line!, (3*l - 2*i, 1 + i, 3*l + 2 - i)))
+            push!(composite_domains, (add_axis_three_line!, (3*l - 2*i, 1 + i, 1 + i)))
+            push!(composite_domains, (add_axis_three_line!, (3*l - 2*i, 3*l + 2 - i, 2 + i)))
+        else
+            push!(composite_domains, (add_axis_two_line!, (3*l - 2*i, 1 + i, 1 + i)))
+            push!(composite_domains, (add_axis_two_line!, (3*l - 2*i, 2 + i, 3*l + 2 - i)))
+            push!(composite_domains, (add_axis_three_line!, (3*l - 2*i, 1 + i, 2 + i)))
+            push!(composite_domains, (add_axis_three_line!, (3*l - 2*i, 3*l + 2 - i, 1 + i)))
+        end
+    end
+    return CompositeTriTiling(domain_dimensions = domain_dimensions,
                               composite_domains = composite_domains)
 end
 
