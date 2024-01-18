@@ -117,9 +117,11 @@ function tikz_dimer(i1,j1,i2,j2)
     end
 end
 
-function save_matching_to_tex_file(tiling, tikz_func, filename; xscale = 1.0, yscale = 1.0, jump = 5)
+function save_matching_to_tex_file(tiling, tikz_func, filename; xscale = 1.0, yscale = 1.0, jump = 5, img_folder = true)
     file_text = []
-    filename = "img/"*filename
+    if img_folder
+        filename = "img/"*filename
+    end
     open(filename, "w") do io
         write(io, latex_preamble(xscale = xscale, yscale = yscale))
         write(io, tikz_edimers()*"\n")

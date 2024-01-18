@@ -123,6 +123,23 @@ function up_trapezoid(l::Int64, w::Int64, singly_periodic = false)
                                       composite_domains = [(add_up_trapezoid!, (l, w, 2, 1))])
 end
 
+function up_triangle(l::Int64)
+end
+
+function holy_parallelogram(l::Int64,w::Int64)
+    if (l%2 == 0) && (w%2 == 0)
+        throw(DomainError((l,w), "No tiling of the domain with such side lengths exists"))
+    end
+    composite_domains = []
+    for i in 0:2, j in 0:2
+        if (i != 1) || (j != 1)
+            push!(composite_domains, (add_parallelogram!, (l, w, 2 + i*(l+1), 2 + j*(w+1), 1)))
+        end
+    end
+    return CompositeTriTiling(domain_dimensions = [6 + 3*l, 6 + 3*w],
+                              composite_domains = composite_domains)
+end
+
 
 #= TO IMPLEMENT 
 function parallelogram_bridge(l1::Int64, w1::Int64, l2::Int64, w2::Int64, l3::Int64, w3::Int64)
