@@ -120,13 +120,59 @@ function one_periodic_weight(p,q,r, i, j, axis)
     end
 end
 
-function color_weight(p,q,r, i, j, axis)
+function two_periodic_weight(weight_vals, i, j, axis)
+    index = 1*(i%2 == 0) + 2*(j%2 == 0) + 4*(axis - 1)
+    return weight_vals[index + 1]
+end
+
+function color_weight(p1, p2, q1, q2, r1, r2, i, j, axis)
     if (axis == 1) && ((i+j)%2 == 0)
-        return p
-    elseif (axis == 2) && (j%2 == 0)
-        return q
-    elseif (axis == 3) && (i%2 == 0)
-        return r
+        return p1
+    elseif (axis == 1)
+        return p2
+    elseif (axis == 2) && (i%2 == 0)
+        return q1
+    elseif axis == 2
+        return q2
+    elseif (axis == 3) && (j%2 == 0)
+        return r1
+    elseif axis == 3
+        return r2
     end
     return 1
 end
+
+#I accidentally made th weight for axis == 2 (j%2 == 0) and interestingly the pair (q1, q2) only depends on q1*q2 in that circumstance!
+
+function sq_lattice_weight(a11, a22, a12, b11, b22, b12, b21, i, j, axis)
+    if (i%2 == 0) && (j%2 == 0) && (axis == 2)
+        return b11
+    elseif (i%2 == 0) && (j%2 == 0) && (axis == 3)
+        return a11
+    elseif (i%2 == 1) && (j%2 == 0) && (axis == 2)
+        return b12
+        #return .3
+    elseif (i%2 == 1) && (j%2 == 0) && (axis == 3)
+        return a12
+    elseif (i%2 == 0) && (j%2 == 1) && (axis == 2)
+        return b21
+    elseif (i%2 == 0) && (j%2 == 1) && (axis == 3)
+        return a12*a11/a22
+    elseif (i%2 == 1) && (j%2 == 1) && (axis == 2)
+        return a22
+    elseif (i%2 == 1) && (j%2 == 1) && (axis == 3)
+        return b22
+    end
+    return 0
+end
+
+#=
+a11 = 1.4;
+a22 = 2.2;
+a12 = 2.5;
+a21 = a12 a11/a22;
+b12 = 1.7;
+b21 = .2;
+b11=1;
+b22=1;
+=#

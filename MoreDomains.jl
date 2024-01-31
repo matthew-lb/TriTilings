@@ -93,7 +93,7 @@ function any_parallelogram(l::Int64, w::Int64, x_periodic = false, y_periodic = 
     end
     return constructor(domain_dimensions = [rbound, lbound],
                        composite_domains = [(add_parallelogram!, (l, w, lstart, rstart, 1))])
-end #TEST IT
+end 
 
 function giant_bibone(l::Int64, singly_periodic = false)
     if l%4 != 1

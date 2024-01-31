@@ -232,6 +232,41 @@ function luxor_swdimer(x,y; col = "blue", border = false)
     strokepath()
 end
 
+function luxor_hexagon(x,y;col="blue",border = false)
+    Luxor.translate(Point(x,y))
+    move(Point(cos(2*pi*(4.5)/6)/sqrt(3), -sin(2*pi*(4.5)/6)/sqrt(3)))
+    for i in 1:6
+        line(Point(cos(2*pi*(i+.5)/6)/sqrt(3), -sin(2*pi*(i+.5)/6)/sqrt(3)))
+    end
+    closepath()
+    setcolor(col)
+    fillpath()
+end
+
+function luxor_color_dimer(i1,j1,i2,j2; border = false)
+    x1, y1 = luxor_coors(i1, j1)
+    x2, y2 = luxor_coors(i2, j2)
+    if (y1 == y2) && (x1 < x2)
+        luxor_hexagon(x1, y1, col = "blue")
+        luxor_hexagon(x2, y2, col = "red")
+    elseif (y1 == y2) && (x2 < x1)
+        luxor_hexagon(x1, y1, col = "red")
+        luxor_hexagon(x2, y2, col = "blue")
+    elseif (x1 < x2) && (y1 < y2)
+        luxor_hexagon(x1, y1, col = "blue")
+        luxor_hexagon(x2, y2, col = "red")
+    elseif (x1 > x2) && (y1 > y2)
+        luxor_hexagon(x1, y1, col = "red")
+        luxor_hexagon(x2, y2, col = "blue")
+    elseif (x1 > x2) && (y1 < y2)
+        luxor_hexagon(x1, y1, col = "blue")
+        luxor_hexagon(x2, y2, col = "red")
+    else
+        luxor_hexagon(x1, y1, col = "red")
+        luxor_hexagon(x2, y2, col = "blue")
+    end
+end
+
 function luxor_dimer(i1,j1,i2,j2; border = false, e_col = "lightblue", se_col = "blue", sw_col = "darkblue")
     border = border && (i1 == 1 || j1 == 1)
     x1, y1 = luxor_coors(i1, j1)
@@ -249,6 +284,30 @@ function luxor_dimer(i1,j1,i2,j2; border = false, e_col = "lightblue", se_col = 
     else
         luxor_swdimer(x2, y2, col = sw_col)
     end
+end
+
+function square_dimer(i1,j1,i2,j2; border = false, e_col = "lightblue", se_col = "blue", sw_col = "darkblue")
+    hori, vert = 1,1
+    if (i1 == i2 + 1) || (j1 == j2 + 1)
+        i1, i2 = i2, i1
+        j1, j2 = j2, j1
+    end
+    if (i2 != i1) hori += 1 end
+    if (j2 != j1) vert += 1 end
+    if (i1+j1)%2 == 0 && (i1 != i2)
+        col = "red"
+    elseif (i1+j1)%2 == 1 && (i1 != i2)
+        col = "yellow"
+    elseif (i1+j1)%2 == 0
+        col = "blue"
+    else
+        col = "green"
+    end
+    sethue(col)
+    rect(i1-.5, j1-.5, hori, vert, :fill)
+    sethue("black")
+    setline(.1)
+    rect(i1-.5, j1-.5, hori, vert, :stroke)
 end
 
 function full_matching_luxor(tiling::AbstractCompositeTriTiling, luxor_func; xshift = 0, yshift = 0, bordered = true)
@@ -302,7 +361,7 @@ function add_boundary(tiling::PeriodicCompositeTriTiling)
     end
 end
 
-function save_matching_to_luxor_file(tiling::PeriodicCompositeTriTiling, luxor_func, filename; xperiodic = true, yperiodic = true, xdim = 500, ydim = 500)
+function save_matching_to_luxor_file(tiling::PeriodicCompositeTriTiling, luxor_func, filename; xperiodic = true, yperiodic = true, xdim = 500, ydim = 500, add_border = true)
     ybound = (tiling.shift[2], tiling.domain_dimensions[1])
     xbound = (tiling.domain_dimensions[2], tiling.shift[1])
     Drawing(xdim, ydim, "img/"*filename)
@@ -320,6 +379,8 @@ function save_matching_to_luxor_file(tiling::PeriodicCompositeTriTiling, luxor_f
             full_matching_luxor(tiling, luxor_func, xshift = xshift, yshift = yshift, bordered = false)
         end
     end
-    add_boundary(tiling)
+    if add_border
+        add_boundary(tiling)
+    end
     finish()
 end

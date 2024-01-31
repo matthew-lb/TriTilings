@@ -5,6 +5,7 @@ include("MoreDomains.jl")
 struct ConformalLoopEnsemble
     loops::Dict{Tuple{Int64, Int64}, Tuple{Int64, Int64}}
     start_points::Vector{Tuple{Int64, Int64}}
+    periodic::Bool
 end
 
 struct HeightFunction
@@ -12,7 +13,7 @@ struct HeightFunction
     down_heights::Dict{Tuple{Int64, Int64}, Int64}
 end
 
-function point_set(tiling::TriTiling)
+function point_set(tiling::CompositeTriTiling)
     appeared = Set{Tuple{Int64, Int64}}()
     for (x,y) in tiling.iterator_helper_array[1]
         if tiling.get_up(tiling, x, y) != -1
@@ -29,7 +30,63 @@ function point_set(tiling::TriTiling)
     return appeared
 end
 
-function construct_ensemble(tiling::TriTiling; updates = 50, rtiling = nothing)
+function point_set(tiling::PeriodicCompositeTriTiling)
+    appeared = Set{Tuple{Int64, Int64}}()
+    for (x,y) in tiling.iterator_helper_array[1]
+        if tiling.get_up(tiling, x, y) != -1
+            push!(appeared, (x,y))
+            push!(appeared, shift_in_bounds(tiling, x,y+1))
+            push!(appeared, shift_in_bounds(tiling, x+1,y+1))
+        end
+        if tiling.get_down(tiling, x, y) != -1
+            push!(appeared, (x,y))
+            push!(appeared, shift_in_bounds(tiling, x+1,y))
+            push!(appeared, shift_in_bounds(tiling, x+1,y+1))
+        end
+    end
+    return appeared
+end
+
+function neighbor_to(tiling::CompositeTriTiling, i, j)
+    r = paired_direction(tiling, i, j)
+    if r == 0
+        throw(ErrorException("Not a valid tiling"))
+    elseif r == 1
+        return i+1,j+1
+    elseif r == 2
+        return i+1,j
+    elseif r == 3
+        return i,j-1
+    elseif r == 4
+        return i-1,j-1
+    elseif r == 5
+        return i-1,j
+    else
+        return i,j+1
+    end
+end
+
+function neighbor_to(tiling::PeriodicCompositeTriTiling, i, j)
+    r = paired_direction(tiling, i, j)
+    if r == 0
+        throw(ErrorException("Not a valid tiling"))
+    elseif r == 1
+        return shift_in_bounds(tiling, i+1,j+1)
+    elseif r == 2
+        return shift_in_bounds(tiling, i+1,j)
+    elseif r == 3
+        return shift_in_bounds(tiling, i,j-1)
+    elseif r == 4
+        return shift_in_bounds(tiling, i-1,j-1)
+    elseif r == 5
+        return shift_in_bounds(tiling, i-1,j)
+    else
+        return shift_in_bounds(tiling, i,j+1)
+    end
+end
+
+
+function construct_ensemble(tiling::AbstractCompositeTriTiling; updates = 50, rtiling = nothing)
     if isnothing(rtiling)
         rtiling = deepcopy(tiling)
         for i in 1:updates
@@ -42,14 +99,14 @@ function construct_ensemble(tiling::TriTiling; updates = 50, rtiling = nothing)
     for point in points
         if !haskey(loops, point)
             push!(start_points, point)
-            newpoint = paired_with(tiling, point...)
+            newpoint = neighbor_to(tiling, point...)
             loops[point] = newpoint
             i = 1
             while newpoint != point
                 if i%2 == 1
-                    tempoint = paired_with(rtiling, newpoint...)
+                    tempoint = neighbor_to(rtiling, newpoint...)
                 else
-                    tempoint = paired_with(tiling, newpoint...)
+                    tempoint = neighbor_to(tiling, newpoint...)
                 end
                 loops[newpoint] = tempoint
                 newpoint = tempoint
@@ -57,8 +114,7 @@ function construct_ensemble(tiling::TriTiling; updates = 50, rtiling = nothing)
             end
         end
     end
-
-    return ConformalLoopEnsemble(loops, start_points)
+    return ConformalLoopEnsemble(loops, start_points, isa(tiling, PeriodicCompositeTriTiling))
 end
 
 function is_edge(cle::ConformalLoopEnsemble, p1, p2)
@@ -69,7 +125,7 @@ function single_edge(cle::ConformalLoopEnsemble, p1, p2)
     return (cle.loops[p1] == p2) ⊻ (cle.loops[p2] == p1)
 end
 
-function construct_heights(tiling::TriTiling, cle::ConformalLoopEnsemble)
+function construct_heights(tiling::AbstractCompositeTriTiling, cle::ConformalLoopEnsemble)
     up_heights = Dict{Tuple{Int64, Int64}, Int64}()
     down_heights = Dict{Tuple{Int64, Int64}, Int64}()
     if tiling.get_up(tiling, tiling.iterator_helper_array[1][1]...) != -1
@@ -84,14 +140,32 @@ function construct_heights(tiling::TriTiling, cle::ConformalLoopEnsemble)
         face, is_up = pop!(stack)
         x,y = face
         if is_up
-            neighbors = [(x,y), (x-1, y), (x, y+1)]
-            border = [single_edge(cle, (x,y), (x+1,y+1)), single_edge(cle, (x,y), (x,y+1)), single_edge(cle, (x,y+1), (x+1,y+1))]
+            if !cle.periodic
+                neighbors = [(x,y), (x-1, y), (x, y+1)]
+                border = [single_edge(cle, (x,y), (x+1,y+1)), 
+                          single_edge(cle, (x,y), (x,y+1)), 
+                          single_edge(cle, (x,y+1), (x+1,y+1))]
+            else
+                neighbors = [shift_in_bounds(tiling,x,y), shift_in_bounds(tiling,x-1, y), shift_in_bounds(tiling, x, y+1)]
+                border = [single_edge(cle, shift_in_bounds(tiling, x,y), shift_in_bounds(tiling, x+1,y+1)), 
+                          single_edge(cle, shift_in_bounds(tiling, x,y), shift_in_bounds(tiling, x,y+1)), 
+                          single_edge(cle, shift_in_bounds(tiling, x,y+1), shift_in_bounds(tiling, x+1,y+1))]
+            end
             get_func = tiling.get_down
             cur_dict = up_heights
             nb_dict = down_heights   
         else
-            neighbors = [(x,y), (x+1,y), (x, y-1)]
-            border = [single_edge(cle, (x,y), (x+1,y+1)), single_edge(cle, (x+1,y), (x+1,y+1)), single_edge(cle, (x,y), (x+1, y))]
+            if !cle.periodic
+                neighbors = [(x,y), (x+1,y), (x, y-1)]
+                border = [single_edge(cle, (x,y), (x+1,y+1)), 
+                          single_edge(cle, (x+1,y), (x+1,y+1)), 
+                          single_edge(cle, (x,y), (x+1, y))]
+            else
+                neighbors = [shift_in_bounds(tiling,x,y), shift_in_bounds(tiling,x+1,y), shift_in_bounds(tiling, x, y-1)]
+                border = [single_edge(cle, shift_in_bounds(tiling, x,y), shift_in_bounds(tiling, x+1,y+1)), 
+                          single_edge(cle, shift_in_bounds(tiling, x+1,y), shift_in_bounds(tiling, x+1,y+1)), 
+                          single_edge(cle, shift_in_bounds(tiling, x,y), shift_in_bounds(tiling, x+1,y))]
+            end
             get_func = tiling.get_up
             cur_dict = down_heights
             nb_dict = up_heights
@@ -149,10 +223,36 @@ function save_loops_to_luxor_file(ce::ConformalLoopEnsemble, filename; xdim = 10
     setcolor("black")
     setline(.2)
     for point in keys(ce.loops)
-        move(Point(point...))
-        line(Point(ce.loops[point]...))
-        strokepath()
+        if abs(point[1] - ce.loops[point][1]) <= 1 && abs(point[2] - ce.loops[point][2]) <= 1
+            move(Point(point...))
+            line(Point(ce.loops[point]...))
+            strokepath()
+        end
     end
     finish()
+end
+
+function magnetization(ht::HeightFunction)
+    return sum(values(ht.up_heights)) + sum(values(ht.down_heights)) - length(values(ht.up_heights))
+end
+
+function interaction(tiling::AbstractCompositeTriTiling, rtiling::AbstractCompositeTriTiling)
+    interaction = 0
+    for j in 1:tiling.domain_dimensions[1]
+        for i in 1:tiling.domain_dimensions[2]
+            for get_func in [tiling.get_up, tiling.get_down]
+                if get_func(tiling, i, j) != -1
+                    if get_func(tiling, i, j) == get_func(rtiling, i, j)
+                        interaction += 3
+                    elseif (get_func(tiling, i, j) == 0) || (get_func(rtiling, i, j) == 0)
+                        interaction += 1
+                    else
+                        interaction -= 1
+                    end
+                end
+            end
+        end
+    end
+    return interaction
 end
 
